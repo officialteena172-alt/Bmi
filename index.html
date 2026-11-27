@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BMI Calculator by Teena</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #eef6f4;
+    --card: #ffffff;
+    --ink: #12343b;
+    --muted: #5b7a80;
+    --line: #cfe0dd;
+    --accent: #12343b;
+    --under: #5aa9d6;
+    --healthy: #3fae7a;
+    --over: #f0b429;
+    --obese: #e0603f;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0d2226; --card: #14302f; --ink: #e6f3f1; --muted: #9bb8b5;
+      --line: #28484a; --accent: #e6f3f1;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Bricolage Grotesque", system-ui, -apple-system, "Segoe UI", sans-serif;
+    min-height: 100vh;
+    line-height: 1.5;
+  }
+  header {
+    text-align: center;
+    padding: 2rem 1rem 0.5rem;
+  }
+  .founder {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+  }
+  .founder span { color: var(--muted); font-weight: 400; }
+  main {
+    max-width: 560px;
+    margin: 0 auto;
+    padding: 1rem 1rem 3rem;
+  }
+  h1 {
+    font-size: clamp(2.2rem, 8vw, 3.4rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    margin: 1.2rem 0 0.4rem;
+  }
+  .lead { color: var(--muted); margin: 0 0 1.5rem; max-width: 42ch; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 1.4rem;
+  }
+  .units {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    background: var(--bg);
+    border-radius: 999px;
+    padding: 4px;
+    margin-bottom: 1.2rem;
+  }
+  .units button {
+    font: inherit; font-weight: 600;
+    border: 0; background: transparent; color: var(--muted);
+    padding: 0.55rem; border-radius: 999px; cursor: pointer;
+  }
+  .units button[aria-pressed="true"] { background: var(--accent); color: var(--card); }
+  .row { display: flex; gap: 0.8rem; margin-bottom: 1rem; }
+  .field { flex: 1; min-width: 0; }
+  label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 0.3rem; }
+  input {
+    width: 100%;
+    font: inherit; font-size: 1.1rem;
+    color: var(--ink);
+    background: var(--bg);
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    padding: 0.7rem 0.8rem;
+  }
+  input:focus-visible, button:focus-visible {
+    outline: 3px solid var(--under); outline-offset: 2px;
+  }
+  .primary {
+    width: 100%;
+    font: inherit; font-weight: 600; font-size: 1.05rem;
+    border: 0; border-radius: 10px;
+    background: var(--accent); color: var(--card);
+    padding: 0.9rem; cursor: pointer;
+  }
+  .error { color: var(--obese); font-size: 0.9rem; min-height: 1.3em; margin: 0 0 0.6rem; }
+
+  /* Result */
+  #result { margin-top: 1.4rem; display: none; }
+  #result.show { display: block; }
+  .bmi-value {
+    font-size: clamp(3.5rem, 18vw, 5.5rem);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    margin: 0;
+  }
+  .category { font-size: 1.2rem; font-weight: 600; margin: 0.3rem 0 1.4rem; }
+  .gauge { position: relative; padding-top: 14px; }
+  .bar { display: flex; height: 14px; border-radius: 999px; overflow: hidden; }
+  .bar i { display: block; }
+  .bar i:nth-child(1) { width: 28.3%; background: var(--under); }
+  .bar i:nth-child(2) { width: 21.7%; background: var(--healthy); }
+  .bar i:nth-child(3) { width: 16.7%; background: var(--over); }
+  .bar i:nth-child(4) { width: 33.3%; background: var(--obese); }
+  .marker {
+    position: absolute; top: 0; left: 0;
+    width: 0; height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 12px solid var(--ink);
+    transform: translateX(-8px);
+    transition: left 0.6s cubic-bezier(.2,.8,.2,1);
+  }
+  .ticks { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--muted); margin-top: 0.4rem; }
+  .range { margin: 1.2rem 0 0; color: var(--muted); }
+  .range strong { color: var(--ink); }
+  .note { font-size: 0.8rem; color: var(--muted); margin-top: 1.5rem; }
+  footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 2rem; }
+  @media (prefers-reduced-motion: reduce) { .marker { transition: none; } }
+</style>
+</head>
+<body>
+
+<header>
+  <p class="founder"><span>Founder:</span> Teena</p>
+</header>
+
+<main>
+  <h1>BMI Calculator</h1>
+  <p class="lead">Enter your height and weight to see your body mass index and where it falls on the scale.</p>
+
+  <section class="card">
+    <div class="units" role="group" aria-label="Unit system">
+      <button type="button" id="btn-metric" aria-pressed="true">Metric (cm, kg)</button>
+      <button type="button" id="btn-imperial" aria-pressed="false">Imperial (ft, lb)</button>
+    </div>
+
+    <form id="form" novalidate>
+      <div class="row" id="height-metric">
+        <div class="field">
+          <label for="cm">Height (cm)</label>
+          <input id="cm" type="number" inputmode="decimal" min="50" max="260" step="any" placeholder="170">
+        </div>
+      </div>
+      <div class="row" id="height-imperial" hidden>
+        <div class="field">
+          <label for="ft">Height (ft)</label>
+          <input id="ft" type="number" inputmode="numeric" min="1" max="8" step="1" placeholder="5">
+        </div>
+        <div class="field">
+          <label for="inch">Height (in)</label>
+          <input id="inch" type="number" inputmode="decimal" min="0" max="11.99" step="any" placeholder="7">
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="weight" id="weight-label">Weight (kg)</label>
+          <input id="weight" type="number" inputmode="decimal" min="1" step="any" placeholder="65">
+        </div>
+      </div>
+      <p class="error" id="error" role="alert"></p>
+      <button class="primary" type="submit">Calculate BMI</button>
+    </form>
+
+    <div id="result" aria-live="polite">
+      <p class="bmi-value" id="bmi">0</p>
+      <p class="category" id="category"></p>
+      <div class="gauge">
+        <div class="marker" id="marker"></div>
+        <div class="bar"><i></i><i></i><i></i><i></i></div>
+        <div class="ticks"><span>10</span><span>18.5</span><span>25</span><span>30</span><span>40+</span></div>
+      </div>
+      <p class="range" id="range"></p>
+    </div>
+  </section>
+
+  <p class="note">BMI is a general screening measure. It does not account for muscle mass, age or body type. For health advice, talk to a doctor.</p>
+</main>
+
+<footer>&copy; <span id="year"></span> BMI Calculator by Teena</footer>
+
+<script>
+  var unit = "metric";
+  var $ = function (id) { return document.getElementById(id); };
+
+  document.getElementById("year").textContent = new Date().getFullYear();
+
+  function setUnit(u) {
+    unit = u;
+    $("btn-metric").setAttribute("aria-pressed", u === "metric");
+    $("btn-imperial").setAttribute("aria-pressed", u === "imperial");
+    $("height-metric").hidden = u !== "metric";
+    $("height-imperial").hidden = u !== "imperial";
+    $("weight-label").textContent = u === "metric" ? "Weight (kg)" : "Weight (lb)";
+    $("weight").placeholder = u === "metric" ? "65" : "143";
+    $("error").textContent = "";
+    $("result").classList.remove("show");
+  }
+  $("btn-metric").addEventListener("click", function () { setUnit("metric"); });
+  $("btn-imperial").addEventListener("click", function () { setUnit("imperial"); });
+
+  function category(b) {
+    if (b < 18.5) return "Underweight";
+    if (b < 25) return "Healthy weight";
+    if (b < 30) return "Overweight";
+    return "Obese";
+  }
+
+  $("form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var heightM, weightKg;
+    var w = parseFloat($("weight").value);
+
+    if (unit === "metric") {
+      var cm = parseFloat($("cm").value);
+      heightM = cm / 100;
+      weightKg = w;
+    } else {
+      var ft = parseFloat($("ft").value) || 0;
+      var inch = parseFloat($("inch").value) || 0;
+      heightM = (ft * 12 + inch) * 0.0254;
+      weightKg = w * 0.45359237;
+    }
+
+    if (!heightM || heightM < 0.5 || heightM > 2.6 || !weightKg || weightKg <= 0) {
+      $("error").textContent = "Enter a valid height and weight, then try again.";
+      $("result").classList.remove("show");
+      return;
+    }
+    $("error").textContent = "";
+
+    var bmi = weightKg / (heightM * heightM);
+    $("bmi").textContent = bmi.toFixed(1);
+    $("category").textContent = category(bmi);
+
+    // Marker position: scale runs from BMI 10 to 40
+    var pct = Math.min(Math.max((bmi - 10) / 30, 0), 1) * 100;
+    $("result").classList.add("show");
+    $("marker").style.left = "0%";
+    requestAnimationFrame(function () {
+      requestAnimationFrame(function () { $("marker").style.left = pct + "%"; });
+    });
+
+    // Healthy weight range for this height
+    var lo = 18.5 * heightM * heightM;
+    var hi = 24.9 * heightM * heightM;
+    if (unit === "metric") {
+      $("range").innerHTML = "Healthy weight for your height: <strong>" + lo.toFixed(1) + " to " + hi.toFixed(1) + " kg</strong>";
+    } else {
+      $("range").innerHTML = "Healthy weight for your height: <strong>" + (lo / 0.45359237).toFixed(0) + " to " + (hi / 0.45359237).toFixed(0) + " lb</strong>";
+    }
+  });
+</script>
+</body>
+</html>
